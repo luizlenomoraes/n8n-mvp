@@ -58,6 +58,7 @@ export default function Dashboard() {
 
     setIsSubmitting(true);
     try {
+      console.log('Submitting project:', newProject);
       const createdProject = await createProject(newProject);
       setProjects((prev) => [createdProject, ...prev]);
       setDialogOpen(false);
@@ -70,11 +71,11 @@ export default function Dashboard() {
         title: 'Project Created',
         description: 'Your project has been created and will begin processing shortly.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating project:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create project. Please try again later.',
+        description: error.message || 'Failed to create project. Please try again later.',
         variant: 'destructive',
       });
     } finally {
@@ -181,7 +182,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="line-clamp-3 text-sm text-gray-600">
-                    {project.script}
+                    {project.roteiro || project.script}
                   </p>
                 </CardContent>
                 <CardFooter className="flex justify-between">

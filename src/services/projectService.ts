@@ -15,7 +15,10 @@ export const fetchProjects = async (): Promise<Project[]> => {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
   
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching projects:', error);
+    throw error;
+  }
   return data as Project[];
 };
 
@@ -52,53 +55,58 @@ export const fetchProjectWithImages = async (projectId: string): Promise<{projec
 
 // Create a new project
 export const createProject = async (projectData: ProjectFormData): Promise<Project> => {
+  console.log('Creating project with data:', projectData);
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) throw new Error('User not authenticated');
   
-  // Create the project record
-  const { data: project, error: projectError } = await supabase
-    .from('projects')
-    .insert([
-      { 
-        ...projectData, 
-        user_id: user.id, 
-        status: 'Pendente'
-      }
-    ])
-    .select()
-    .single();
-  
-  if (projectError) throw projectError;
-  
-  // Trigger the n8n webhook
   try {
-    const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-      throw new Error('N8N webhook URL not configured');
-    }
+    // Create the project record with proper field mapping
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert([
+        { 
+          title: projectData.title, 
+          roteiro: projectData.script, // Map script to roteiro as per database schema
+          style: projectData.style, 
+          user_id: user.id, 
+          status: 'Pendente'
+        }
+      ])
+      .select()
+      .single();
     
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        project_id: project.id,
-        roteiro: project.script,
-        estilo: project.style,
-        user_id: user.id
-      }),
-    });
+    if (projectError) {
+      console.error('Error creating project:', projectError);
+      throw projectError;
+    }
+
+    console.log('Project created successfully:', project);
+    
+    // Trigger the n8n webhook if configured
+    const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_id: project.id,
+            roteiro: project.roteiro,
+            estilo: project.style,
+            user_id: user.id
+          }),
+        });
+      } catch (webhookError) {
+        // Log the error but don't fail the operation - the project was created
+        console.error('Error triggering n8n webhook:', webhookError);
+      }
+    }
     
     return project as Project;
   } catch (error) {
-    // Log the error but don't fail the operation - the project was created
-    console.error('Error triggering n8n webhook:', error);
-    toast({
-      title: "Project Created",
-      description: "Your project was created but there was an issue starting the generation. Our team will investigate.",
-      variant: "destructive",
-    });
-    return project as Project;
+    console.error('Error in createProject:', error);
+    throw error;
   }
 };
 
