@@ -2,10 +2,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/supabase';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Use the direct values from Supabase client.ts file which contains the correct URL and key
+const SUPABASE_URL = "https://kiqqhyfksaerkvenwupw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcXFoeWZrc2Flcmt2ZW53dXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzIwMTQsImV4cCI6MjA2MjY0ODAxNH0.hQ9-V9IF5CN31I3VlOldgbYuujsOccMk2U5-l2CQ7f4";
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Custom function to provision Google Drive folder
 export const provisionDriveFolder = async () => {
