@@ -10,6 +10,7 @@ export type Project = {
   id: string;
   title: string;
   script: string;
+  roteiro?: string; // Adicionado campo roteiro como opcional
   style: 'Minimalista' | 'Quadrinhos';
   status: 'Pendente' | 'Em Progresso' | 'Concluído';
   user_id: string;

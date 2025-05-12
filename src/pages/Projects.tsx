@@ -78,7 +78,7 @@ export default function Projects() {
                 </CardHeader>
                 <CardContent>
                   <p className="line-clamp-3 text-sm text-gray-600">
-                    {project.roteiro || project.script}
+                    {project.script}
                   </p>
                 </CardContent>
                 <CardFooter className="flex justify-between">

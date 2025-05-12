@@ -61,18 +61,17 @@ export const createProject = async (projectData: ProjectFormData): Promise<Proje
   if (!user) throw new Error('User not authenticated');
   
   try {
-    // Create the project record with proper field mapping
+    // Create the project record with correct field mapping
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .insert([
-        { 
-          title: projectData.title, 
-          roteiro: projectData.script, // Map script to roteiro as per database schema
-          style: projectData.style, 
-          user_id: user.id, 
-          status: 'Pendente'
-        }
-      ])
+      .insert({
+        title: projectData.title, 
+        script: projectData.script, // Usar script diretamente
+        roteiro: projectData.script, // Mapeando script para roteiro também
+        style: projectData.style, 
+        user_id: user.id, 
+        status: 'Pendente'
+      })
       .select()
       .single();
     
@@ -83,24 +82,22 @@ export const createProject = async (projectData: ProjectFormData): Promise<Proje
 
     console.log('Project created successfully:', project);
     
-    // Trigger the n8n webhook if configured
-    const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
-    if (webhookUrl) {
-      try {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            project_id: project.id,
-            roteiro: project.roteiro,
-            estilo: project.style,
-            user_id: user.id
-          }),
-        });
-      } catch (webhookError) {
-        // Log the error but don't fail the operation - the project was created
-        console.error('Error triggering n8n webhook:', webhookError);
-      }
+    // Trigger the webhook
+    try {
+      await fetch('https://webhook.modelaai.online/webhook/mvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: project.id,
+          roteiro: project.script, // Usando project.script em vez de project.roteiro
+          estilo: project.style,
+          user_id: user.id
+        }),
+      });
+      console.log('Webhook triggered successfully');
+    } catch (webhookError) {
+      console.error('Error triggering webhook:', webhookError);
+      // Não vamos falhar a operação se o webhook falhar
     }
     
     return project as Project;
