@@ -30,7 +30,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider
-      collapsedWidth={56}
       defaultCollapsed={false}
       onCollapsedChange={setSidebarCollapsed}
     >
