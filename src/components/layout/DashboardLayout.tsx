@@ -30,8 +30,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider
-      defaultCollapsed={false}
-      onCollapsedChange={setSidebarCollapsed}
+      onOpenChange={(open) => setSidebarCollapsed(!open)}
     >
       <div className="min-h-screen flex bg-imageflow-background">
         <Sidebar className={`border-r ${sidebarCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
